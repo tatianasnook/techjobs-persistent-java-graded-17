@@ -58,17 +58,15 @@ public class HomeController {
             model.addAttribute("skills", skillRepository.findAll());
             return "add";
         }
-        // Retrieve the employer by ID
-        Optional<Employer> employerOpt = employerRepository.findById(employerId);
+        // Retrieve the employer by ID, or create a new one if not found
+        Employer employer = employerRepository.findById(employerId)
+                .orElseGet(() -> {
+                    Employer newEmployer = new Employer();
+                    newEmployer.setName("New Employer"); // Set a default or required value
+                    return employerRepository.save(newEmployer); // Save the new employer
+                });
 
-        if (employerOpt.isPresent()) {
-            newJob.setEmployer(employerOpt.get()); // Set employer
-        } else {
-            model.addAttribute("error", "Invalid employer ID");
-            model.addAttribute("title", "Add Job");
-            model.addAttribute("employers", employerRepository.findAll());
-            return "add";
-        }
+        newJob.setEmployer(employer); // Set employer
 
         // Retrieve skills from the database
         List<Skill> skillObjs = (List<Skill>) skillRepository.findAllById(skills);
